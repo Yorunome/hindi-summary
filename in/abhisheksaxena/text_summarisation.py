@@ -8,10 +8,6 @@ from tkinter.ttk import *
 import tkinter.messagebox
 
 
-def clearTextBox(textBox):
-    textBox.delete(1.0, tk.END)
-
-
 class TextSummarization:
     sentence = ""
     hindi_stop_words = set(STOPS_LIST)
@@ -132,10 +128,12 @@ class UI:
         sampleButton_1 = tk.Button(buttonFrame, text="Sample 1", command=lambda: self.setSample(0))
         sampleButton_2 = tk.Button(buttonFrame, text="Sample 2", command=lambda: self.setSample(1))
         sampleButton_3 = tk.Button(buttonFrame, text="Sample 3", command=lambda: self.setSample(2))
+        resetButton = tk.Button(buttonFrame, text="Reset", command=lambda: self.reset())
         processButton = tk.Button(buttonFrame, text="Process", command=lambda: self.processData())
         sampleButton_1.grid(row=0, column=2)
         sampleButton_2.grid(row=0, column=3, padx=20)
         sampleButton_3.grid(row=0, column=4)
+        resetButton.grid(row=0, column=5, padx=(50, 0))
         processButton.grid(row=1, column=3, pady=20)
 
         stopWordRemovalFrame = tk.Frame(rootFrame)
@@ -167,8 +165,10 @@ class UI:
 
     def setSample(self, value):
         # self.hindiInputBox.delete(1.0, tk.END)
+        clearTextBox(self.hindiInputBox)
         self.clearAllTextBoxes()
-        self.hindiInputBox.insert(tk.INSERT, self.textSummarization.hindi_text[value], "")
+        # self.hindiInputBox.insert(tk.INSERT, self.textSummarization.hindi_text[value], "")
+        insertTextInTextbox(self.hindiInputBox, self.textSummarization.hindi_text[value], "", False)
 
     def processData(self):
         inputData = self.hindiInputBox.get("1.0", "end-1c")
@@ -179,21 +179,38 @@ class UI:
         else:
             self.textSummarization.sentence = inputData
             self.textSummarization.get_filtered_sentence()
-            self.stopWordRemovalText.insert(tk.INSERT, self.textSummarization.sentence.strip(),
-                                            "Failed to process Data")
-            self.wordTokenizerText.insert(tk.INSERT,
-                                          self.textSummarization.wordTokenizerWithWordsAsString()
-                                          .strip(),
-                                          "Failed to process Data")
-            self.sentenceTokenizerText.insert(tk.INSERT, self.textSummarization.sentence_tokenizer()
-                                              .strip()
-                                              , 'Failed to process Data')
+
+            insertTextInTextbox(self.stopWordRemovalText, self.textSummarization.sentence.strip(),
+                                "Failed to process Data")
+
+            insertTextInTextbox(self.wordTokenizerText, self.textSummarization.wordTokenizerWithWordsAsString().strip(),
+                                "Failed to process Data")
+
+            insertTextInTextbox(self.sentenceTokenizerText, self.textSummarization.sentence_tokenizer().strip(),
+                                "Failed to process Data")
+
+    def reset(self):
+        clearTextBox(self.hindiInputBox)
+        self.clearAllTextBoxes()
 
     def clearAllTextBoxes(self):
-        clearTextBox(self.hindiInputBox)
         clearTextBox(self.stopWordRemovalText)
         clearTextBox(self.wordTokenizerText)
         clearTextBox(self.sentenceTokenizerText)
+
+
+def insertTextInTextbox(textBox, inputData, alternativeText, isDisabled=True):
+    textBox.config(state="normal")
+    textBox.insert(tk.END, inputData, alternativeText)
+
+    if isDisabled:
+        textBox.config(state="disabled")
+
+
+def clearTextBox(textBox):
+    textBox.config(state="normal")
+    textBox.delete(1.0, tk.END)
+    textBox.config(state="disabled")
 
 
 root = tk.Tk()
